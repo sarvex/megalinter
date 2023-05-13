@@ -23,22 +23,16 @@ class RLinter(Linter):
             "errors <- purrr::keep(lints, ~ .type == 'error');",
             "quit(save = 'no', status = if (length(errors) > 0) 1 else 0)",
         ]
-        # Build shell command
-        cmd = ["R", "--slave", "-e", "".join(r_commands)]
-        return cmd
+        return ["R", "--slave", "-e", "".join(r_commands)]
 
     # Build the CLI command to request lintr version
     def build_version_command(self):
         # Build command in R format
         r_commands = ['packageVersion("lintr");']
-        # Build shell command
-        cmd = ["R", "--slave", "-e", "".join(r_commands)]
-        return cmd
+        return ["R", "--slave", "-e", "".join(r_commands)]
 
     # Build the CLI command to request lintr help
     def build_help_command(self):
         # Build command in R format
         r_commands = ['help("lintr");']
-        # Build shell command
-        cmd = ["R", "--slave", "-e", "".join(r_commands)]
-        return cmd
+        return ["R", "--slave", "-e", "".join(r_commands)]

@@ -82,7 +82,7 @@ class ConsoleReporter(Reporter):
                     found = str(len(linter.files))
 
                 table_line = [
-                    status + " " + linter.descriptor_id,
+                    f"{status} {linter.descriptor_id}",
                     linter.linter_name,
                     linter.cli_lint_mode,
                     found,
@@ -90,7 +90,7 @@ class ConsoleReporter(Reporter):
                     errors,
                 ]
                 if self.master.show_elapsed_time is True:
-                    table_line += [str(round(linter.elapsed_time_s, 2)) + "s"]
+                    table_line += [f"{str(round(linter.elapsed_time_s, 2))}s"]
                 table_data += [table_line]
         table = terminaltables.AsciiTable(table_data)
         table.title = "----SUMMARY"

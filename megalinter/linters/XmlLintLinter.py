@@ -17,17 +17,16 @@ class XmlLintLinter(Linter):
             and self.cli_lint_fix_arg_name is not None
             and config.get(self.request_id, "XML_XMLLINT_AUTOFORMAT", "false") == "true"
         ):
-            if self.cli_lint_mode == "file":
-                config.set(
-                    self.request_id,
-                    "XMLLINT_INDENT",
-                    config.get(self.request_id, "XML_XMLLINT_INDENT", "  "),
-                )
-                cmd += ["--output", f"{file}"]
-            else:
+            if self.cli_lint_mode != "file":
                 raise KeyError(
                     f"You can not apply_fixes with cli_lint_mode {self.cli_lint_mode}"
                 )
+            config.set(
+                self.request_id,
+                "XMLLINT_INDENT",
+                config.get(self.request_id, "XML_XMLLINT_INDENT", "  "),
+            )
+            cmd += ["--output", f"{file}"]
         return cmd
 
     def pre_test(self):

@@ -54,7 +54,7 @@ class mega_linter_3_sarif_test(unittest.TestCase):
         )
         self.assertTrue(
             os.path.isfile(expected_output_file),
-            "Output aggregated SARIF file " + expected_output_file + " should exist",
+            f"Output aggregated SARIF file {expected_output_file} should exist",
         )
 
     def test_sarif_fix(self):
@@ -70,7 +70,7 @@ class mega_linter_3_sarif_test(unittest.TestCase):
         for sarif_file in glob.glob(f"{sarif_dir_absolute}{os.path.sep}*.sarif"):
             # Create linter
             linter = Linter(None, {})
-            linter.name = "SAMPLE_" + os.path.basename(sarif_file)
+            linter.name = f"SAMPLE_{os.path.basename(sarif_file)}"
             linter.can_output_sarif = True
             linter.sarif_output_file = sarif_file
             mega_linter.linters += [linter]
@@ -88,5 +88,5 @@ class mega_linter_3_sarif_test(unittest.TestCase):
         )
         self.assertTrue(
             os.path.isfile(expected_output_file),
-            "Output aggregated SARIF file " + expected_output_file + " should exist",
+            f"Output aggregated SARIF file {expected_output_file} should exist",
         )

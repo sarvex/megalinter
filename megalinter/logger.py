@@ -20,11 +20,7 @@ def initialize_logger(mega_linter):
         "TRACE": logging.WARNING,
         "VERBOSE": logging.INFO,
     }
-    logging_level = (
-        logging_level_list[logging_level_key]
-        if logging_level_key in logging_level_list
-        else logging.INFO
-    )
+    logging_level = logging_level_list.get(logging_level_key, logging.INFO)
 
     handler_stream = logging.StreamHandler(sys.stdout)
     if config.get(
@@ -104,7 +100,7 @@ def display_header(mega_linter):
     )
     logging.info(utils.format_hyphens(""))
     logging.info("The MegaLinter documentation can be found at:")
-    logging.info(" - " + ML_DOC_URL)
+    logging.info(f" - {ML_DOC_URL}")
     logging.info(utils.format_hyphens(""))
     logging.info(log_section_start("megalinter-init", "MegaLinter initialization"))
     logging.info(f"MegaLinter will analyze workspace [{mega_linter.workspace}]")
@@ -119,8 +115,8 @@ def display_header(mega_linter):
     secured_env_variables = config.list_secured_variables(mega_linter.request_id)
     for name, value in sorted(config.get_config(mega_linter.request_id).items()):
         if name not in secured_env_variables:
-            logging.debug("" + name + "=" + str(value))
+            logging.debug(f"{name}={str(value)}")
         else:
-            logging.debug("" + name + "=HIDDEN_BY_MEGALINTER")
+            logging.debug(f"{name}=HIDDEN_BY_MEGALINTER")
     logging.debug(utils.format_hyphens(""))
     logging.info("")

@@ -8,18 +8,15 @@ from megalinter import Linter, flavor_factory
 
 # Returns directory where all .yml language descriptors are defined
 def get_descriptor_dir():
-    # Compiled version (copied from DockerFile)
     if os.path.isdir("/megalinter-descriptors"):
         return "/megalinter-descriptors"
-    # Dev / Test version
-    else:
-        descriptor_dir = os.path.realpath(
-            os.path.dirname(os.path.abspath(__file__)) + "/descriptors"
-        )
-        assert os.path.isdir(
-            descriptor_dir
-        ), f"Descriptor dir {descriptor_dir} not found !"
-        return descriptor_dir
+    descriptor_dir = os.path.realpath(
+        f"{os.path.dirname(os.path.abspath(__file__))}/descriptors"
+    )
+    assert os.path.isdir(
+        descriptor_dir
+    ), f"Descriptor dir {descriptor_dir} not found !"
+    return descriptor_dir
 
 
 # List all defined linters
@@ -62,11 +59,8 @@ def list_linters_by_name(linters_init_params=None, linter_names=[]):
 # List all descriptor files (one by language)
 def list_descriptor_files():
     descriptors_dir = get_descriptor_dir()
-    linters_glob_pattern = descriptors_dir + "/*.megalinter-descriptor.yml"
-    descriptor_files = []
-    for descriptor_file in sorted(glob.glob(linters_glob_pattern)):
-        descriptor_files += [descriptor_file]
-    return descriptor_files
+    linters_glob_pattern = f"{descriptors_dir}/*.megalinter-descriptor.yml"
+    return list(sorted(glob.glob(linters_glob_pattern)))
 
 
 # Extract descriptor info from descriptor file
@@ -108,7 +102,7 @@ def build_descriptor_linters(file, linter_init_params=None, linter_names=None):
                     os.path.basename(linter_descriptor.get("class"))
                 )[0]
                 linter_module = importlib.import_module(
-                    ".linters." + linter_class_file_name, package=__package__
+                    f".linters.{linter_class_file_name}", package=__package__
                 )
                 linter_class = getattr(linter_module, linter_class_file_name)
 

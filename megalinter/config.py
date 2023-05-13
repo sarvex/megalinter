@@ -130,9 +130,7 @@ def combine_config(workspace, config, combined_config, config_source):
 
 def is_initialized_for(request_id):
     global RUN_CONFIGS
-    if request_id in RUN_CONFIGS:
-        return True
-    return False
+    return request_id in RUN_CONFIGS
 
 
 def get_config(request_id=None):
@@ -184,10 +182,7 @@ def get_list(request_id, config_var, default=None):
         if var == "":
             return []
         # Serialized JSON
-        if var.startswith("["):
-            return json.loads(var)
-        # String with comma-separated elements
-        return var.split(",")
+        return json.loads(var) if var.startswith("[") else var.split(",")
     return default
 
 
@@ -196,9 +191,7 @@ def get_list_args(request_id, config_var, default=None):
     if var is not None:
         if isinstance(var, list):
             return var
-        if var == "":
-            return []
-        return shlex.split(var)
+        return [] if var == "" else shlex.split(var)
     return default
 
 
@@ -224,7 +217,7 @@ def delete(request_id=None, key=None):
         return
     if key is None:
         del RUN_CONFIGS[request_id]
-        logging.debug("Cleared MegaLinter runtime config for request " + request_id)
+        logging.debug(f"Cleared MegaLinter runtime config for request {request_id}")
         return
     config = get_config(request_id)
     if key in config:

@@ -59,9 +59,7 @@ class UpdatedSourcesReporter(Reporter):
         # Log
         if len(updated_files) > 0:
             logging.info(
-                f"[Updated Sources Reporter] copied {str(len(updated_files))} fixed source files"
-                f" in folder {updated_sources_dir}.\n"
-                "Download it from artifacts then copy-paste it in your local repo to apply linters updates"
+                f"[Updated Sources Reporter] copied {len(updated_files)} fixed source files in folder {updated_sources_dir}.\nDownload it from artifacts then copy-paste it in your local repo to apply linters updates"
             )
         else:
             logging.info(

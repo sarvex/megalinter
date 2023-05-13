@@ -17,7 +17,7 @@ class ClippyLinter(megalinter.Linter):
             if self.pre_commands is None:
                 self.pre_commands = []
             # Add to pre-commands
-            logging.debug("clippy before_lint_files: " + rustup_init_command)
+            logging.debug(f"clippy before_lint_files: {rustup_init_command}")
             self.pre_commands.append(
                 {"command": rustup_init_command, "cwd": self.workspace}
             )

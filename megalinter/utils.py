@@ -159,14 +159,19 @@ def filter_files(
             continue
 
         # Skip according to file extension (only if lint_all_other_linter_files is false or file_extensions is defined)
-        if lint_all_other_linters_files is False or len(file_extensions) > 0:
-            if file_extension in file_extensions:
-                pass
-            elif "*" in file_extensions:
-                pass
-            elif file_names_regex_object.fullmatch(base_file_name):
-                pass
-            else:
+        if not lint_all_other_linters_files or file_extensions:
+            if (
+                file_extension not in file_extensions
+                and (
+                    file_extension in file_extensions
+                    or "*" not in file_extensions
+                )
+                and (
+                    file_extension in file_extensions
+                    or "*" in file_extensions
+                    or not file_names_regex_object.fullmatch(base_file_name)
+                )
+            ):
                 continue
         # Skip according to end of file name
         if file_names_not_ends_with and file.endswith(tuple(file_names_not_ends_with)):
@@ -205,7 +210,7 @@ def filter_files(
 # Center the string and complete blanks with hyphens (-)
 def format_hyphens(str_in):
     if str_in != "":
-        str_in = " " + str_in + " "
+        str_in = f" {str_in} "
     return "{s:{c}^{n}}".format(s=str_in, n=100, c="-")
 
 
@@ -213,7 +218,7 @@ def list_active_reporters_for_scope(scope, reporter_init_params):
     reporters = []
     # List associated reporters
     reporters_dir = os.path.realpath(
-        os.path.dirname(os.path.abspath(__file__)) + "/reporters"
+        f"{os.path.dirname(os.path.abspath(__file__))}/reporters"
     )
     scope_reporters = []
     for reporter_class_file in os.listdir(reporters_dir):
@@ -221,7 +226,7 @@ def list_active_reporters_for_scope(scope, reporter_init_params):
             continue
         reporter_class_nm = os.path.splitext(reporter_class_file)[0]
         reporter_module = importlib.import_module(
-            ".reporters." + reporter_class_nm, package=__package__
+            f".reporters.{reporter_class_nm}", package=__package__
         )
         reporter_class = getattr(reporter_module, reporter_class_nm)
         if reporter_class.scope == scope:
@@ -258,18 +263,16 @@ def file_contains(file_name: str, regex_object: Optional[Pattern[str]]) -> bool:
     try:
         with open(file_name, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
-        found_pattern = regex_object.search(content) is not None
-        return found_pattern
+        return regex_object.search(content) is not None
     except Exception as e:
-        logging.warning(f"Unable to check content of file {file_name}: " + str(e))
+        logging.warning(f"Unable to check content of file {file_name}: {str(e)}")
         return False
 
 
 def file_is_generated(file_name: str) -> bool:
     with open(file_name, "r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
-    is_generated = "@generated" in content and "@not-generated" not in content
-    return is_generated
+    return "@generated" in content and "@not-generated" not in content
 
 
 def decode_utf8(stdout):
@@ -290,8 +293,7 @@ def list_updated_files(repo_home):
         except git.InvalidGitRepositoryError:
             logging.warning("Unable to find git repository to list updated files")
             return []
-    changed_files = [item.a_path for item in repo.index.diff(None)]
-    return changed_files
+    return [item.a_path for item in repo.index.diff(None)]
 
 
 def is_git_repo(path):
@@ -306,10 +308,7 @@ def check_updated_file(file, repo_home, changed_files=None):
     if changed_files is None:
         changed_files = list_updated_files(repo_home)
     file_absolute = os.path.abspath(file)
-    for changed_file in changed_files:
-        if changed_file in file_absolute:
-            return True
-    return False
+    return any(changed_file in file_absolute for changed_file in changed_files)
 
 
 def normalize_log_string(str_in):
@@ -323,9 +322,9 @@ def normalize_log_string(str_in):
 
 def format_bullet_list(files):
     list_separator = "\n- "
-    prefix = list_separator if any(files) is True else ""
+    prefix = list_separator if any(files) else ""
     file_list = list_separator.join(files) if len(files) > 0 else ""
-    return "{}{}".format(prefix, file_list)
+    return f"{prefix}{file_list}"
 
 
 def find_json_in_stdout(stdout: str):
@@ -384,9 +383,4 @@ def get_current_test_name(full_name=False):
 
 
 def can_write_report_files(megalinter_instance) -> bool:
-    if (
-        megalinter_instance.report_folder == "none"
-        or megalinter_instance.report_folder == "false"
-    ):
-        return False
-    return True
+    return megalinter_instance.report_folder not in ["none", "false"]

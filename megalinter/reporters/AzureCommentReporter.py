@@ -99,9 +99,9 @@ class AzureCommentReporter(Reporter):
             existing_threads = git_client.get_threads(
                 BUILD_REPOSITORY_ID, SYSTEM_PULLREQUEST_PULLREQUESTID
             )
-            existing_thread_id = None
             existing_thread_comment = None
             existing_thread_comment_id = None
+            existing_thread_id = None
             for existing_thread in existing_threads:
                 for comment in existing_thread.comments or []:
                     if "MegaLinter is graciously provided by" in (
@@ -145,17 +145,14 @@ class AzureCommentReporter(Reporter):
             if new_thread_result.id is not None and new_thread_result.id > 0:
                 logging.debug(f"Posted Azure Pipelines comment: {thread_data}")
                 logging.info(
-                    "[Azure Comment Reporter] Posted summary as comment on "
-                    + f"{SYSTEM_TEAMPROJECT} #PR{SYSTEM_PULLREQUEST_PULLREQUESTID}"
+                    f"[Azure Comment Reporter] Posted summary as comment on {SYSTEM_TEAMPROJECT} #PR{SYSTEM_PULLREQUEST_PULLREQUESTID}"
                 )
             else:
                 logging.warning(
-                    "[Azure Comment Reporter] Error while posting comment:"
-                    + str(new_thread_result)
+                    f"[Azure Comment Reporter] Error while posting comment:{str(new_thread_result)}"
                     + "\n"
                     + "See https://megalinter.io/latest/reporters/AzureCommentReporter/"
                 )
-        # Not in Azure context
         else:
             logging.debug(
                 "[Azure Comment Reporter] No Azure Token found, so skipped post of PR comment"

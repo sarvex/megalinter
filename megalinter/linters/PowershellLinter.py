@@ -24,7 +24,7 @@ class PowershellLinter(Linter):
             pwsh_script = ["Invoke-Formatter"]
 
         if self.config_file is not None:
-            pwsh_script[0] += " -Settings " + self.config_file
+            pwsh_script[0] += f" -Settings {self.config_file}"
 
         if self.linter_name == "powershell":
             if self.cli_lint_mode == "file":
@@ -51,20 +51,18 @@ class PowershellLinter(Linter):
             and self.cli_lint_fix_arg_name is not None
         ):
             pwsh_script[0] += f" {self.cli_lint_fix_arg_name}"
-        cmd = [
+        return [
             *self.cli_executable,
             "-NoProfile",
             "-NoLogo",
             "-Command",
             "\n".join(pwsh_script),
         ]
-        return cmd
 
     # Build the CLI command to get linter version
     def build_version_command(self):
-        cmd = [
+        return [
             *self.cli_executable_version,
             "-Command",
             "Write-Output $PsVersionTable.PsVersion;",
         ]
-        return cmd

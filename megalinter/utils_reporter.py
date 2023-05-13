@@ -62,7 +62,7 @@ def build_markdown_summary(reporter_self, action_run_url):
                 errors_cell,
             ]
             if reporter_self.master.show_elapsed_time is True:
-                table_line += [str(round(linter.elapsed_time_s, 2)) + "s"]
+                table_line += [f"{str(round(linter.elapsed_time_s, 2))}s"]
             table_data_raw += [table_line]
     # Build markdown table
     table_data_raw.pop(0)
@@ -87,13 +87,11 @@ def build_markdown_summary(reporter_self, action_run_url):
         + os.linesep
     )
     p_r_msg += table_content + os.linesep
-    if action_run_url != "":
-        p_r_msg += (
-            "See detailed report in [MegaLinter reports"
-            f"]({action_run_url})" + os.linesep
-        )
-    else:
-        p_r_msg += "See detailed report in MegaLinter reports" + os.linesep
+    p_r_msg += (
+        f"See detailed report in [MegaLinter reports]({action_run_url}){os.linesep}"
+        if action_run_url != ""
+        else f"See detailed report in MegaLinter reports{os.linesep}"
+    )
     if reporter_self.master.validate_all_code_base is False:
         p_r_msg += (
             "_Set `VALIDATE_ALL_CODEBASE: true` in mega-linter.yml to validate "
@@ -136,40 +134,30 @@ def build_markdown_summary(reporter_self, action_run_url):
                 )
         p_r_msg += os.linesep
     # Link to ox
-    if (
-        config.get(
-            reporter_self.master.request_id, "REPORTERS_MARKDOWN_TYPE", "advanced"
+    p_r_msg += (
+        f"{os.linesep}MegaLinter is graciously provided by [OX Security](https://www.ox.security/?ref=megalinter)"
+        if (
+            config.get(
+                reporter_self.master.request_id,
+                "REPORTERS_MARKDOWN_TYPE",
+                "advanced",
+            )
+            == "simple"
         )
-        == "simple"
-    ):
-        p_r_msg += (
-            os.linesep
-            + "MegaLinter is graciously provided by [OX Security]"
-            + "(https://www.ox.security/?ref=megalinter)"
-        )
-    else:
-        p_r_msg += (
-            os.linesep
-            + "_MegaLinter is graciously provided by [![OX Security]"
-            + "(https://www.ox.security/wp-content/uploads/2022/06/"
-            + "logo.svg?ref=megalinter_comment)](https://www.ox.security/?ref=megalinter)_"
-        )
+        else f"{os.linesep}_MegaLinter is graciously provided by [![OX Security](https://www.ox.security/wp-content/uploads/2022/06/logo.svg?ref=megalinter_comment)](https://www.ox.security/?ref=megalinter)_"
+    )
     logging.debug("\n" + p_r_msg)
     return p_r_msg
 
 
 def log_link(label, url):
-    if url == "":
-        return label
-    else:
-        return f"[{label}]({url})"
+    return label if url == "" else f"[{label}]({url})"
 
 
 def get_linter_doc_url(linter):
     lang_lower = linter.descriptor_id.lower()
     linter_name_lower = linter.linter_name.lower().replace("-", "_")
-    linter_doc_url = f"{ML_DOC_URL_DESCRIPTORS_ROOT}/{lang_lower}_{linter_name_lower}"
-    return linter_doc_url
+    return f"{ML_DOC_URL_DESCRIPTORS_ROOT}/{lang_lower}_{linter_name_lower}"
 
 
 def log_section_start(section_key: str, section_title: str):
@@ -228,5 +216,5 @@ def convert_sarif_to_human(sarif_in, request_id) -> str:
     )
     return_code = process.returncode
     output = utils.decode_utf8(process.stdout)
-    logging.debug("Sarif to human result: " + str(return_code) + "\n" + output)
+    logging.debug(f"Sarif to human result: {str(return_code)}" + "\n" + output)
     return output

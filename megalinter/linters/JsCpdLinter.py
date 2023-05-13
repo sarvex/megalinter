@@ -17,8 +17,7 @@ class JsCpdLinter(Linter):
                 "--output",
                 f"{self.report_folder}/copy-paste/",
             ]
-        cmd = super().build_lint_command(file)
-        return cmd
+        return super().build_lint_command(file)
 
     # Perform additional actions and provide additional details in text reporter logs
     def complete_text_reporter_report(self, reporter_self):

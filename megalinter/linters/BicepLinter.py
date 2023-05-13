@@ -11,6 +11,4 @@ class BicepLinter(Linter):
     def build_lint_command(self, file=None):
         config.set(self.request_id, "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1")
 
-        cmd = super().build_lint_command(file)
-
-        return cmd
+        return super().build_lint_command(file)
