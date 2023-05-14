@@ -16,10 +16,9 @@ def get_all_flavors():
     # Compiled version (copied from DockerFile)
     if os.path.isfile("/megalinter-descriptors/all_flavors.json"):
         flavors_file = "/megalinter-descriptors/all_flavors.json"
-    # Dev / Test version
     else:
         flavors_file = os.path.realpath(
-            os.path.dirname(os.path.abspath(__file__)) + "/descriptors/all_flavors.json"
+            f"{os.path.dirname(os.path.abspath(__file__))}/descriptors/all_flavors.json"
         )
         assert os.path.isfile(
             flavors_file
@@ -39,12 +38,14 @@ def list_flavor_linters(flavor_id):
 
 
 def list_megalinter_flavors():
-    flavors = {
+    return {
         "all": {"label": "MegaLinter for any type of project"},
         "ci_light": {
             "label": "Optimized for CI items (Dockerfile, Jenkinsfile, JSON/YAML schemas, XML)"
         },
-        "cupcake": {"label": "MegaLinter for the most commonly used languages"},
+        "cupcake": {
+            "label": "MegaLinter for the most commonly used languages"
+        },
         "documentation": {"label": "Optimized for documentation projects"},
         "dotnet": {"label": "Optimized for C, C++, C# or VB based projects"},
         "go": {"label": "Optimized for GO based projects"},
@@ -61,7 +62,6 @@ def list_megalinter_flavors():
         "swift": {"label": "Optimized for SWIFT based projects"},
         "terraform": {"label": "Optimized for TERRAFORM based projects"},
     }
-    return flavors
 
 
 def get_image_flavor():
@@ -128,15 +128,14 @@ def get_megalinter_flavor_suggestions(active_linters):
     all_flavors = get_all_flavors()
     matching_flavors = []
     for flavor_id, flavor_info in all_flavors.items():
-        match = True
-        for active_linter in active_linters:
-            if (
+        match = not any(
+            (
                 active_linter.name not in flavor_info["linters"]
                 and active_linter.ignore_for_flavor_suggestions is False
-            ):
-                match = False
-                break
-        if match is True:
+            )
+            for active_linter in active_linters
+        )
+        if match:
             matching_flavor = {
                 "flavor": flavor_id,
                 "flavor_info": flavor_info,
@@ -159,7 +158,7 @@ def get_megalinter_flavor_suggestions(active_linters):
 
 
 def are_all_repository_linters(linter_names: list[str]) -> bool:
-    if len(linter_names) == 0:
+    if not linter_names:
         return False
     result = True
     for linter_name in linter_names:

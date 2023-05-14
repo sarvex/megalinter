@@ -18,7 +18,7 @@ class RakuLinter(megalinter.Linter):
             self.workspace + os.path.sep + self.config_file_name
         ):  # META6.json
             pre_command = f"cd {self.workspace} && zef install --deps-only --/test ."
-            logging.debug("Raku before_lint_files: " + pre_command)
+            logging.debug(f"Raku before_lint_files: {pre_command}")
             process = subprocess.run(
                 pre_command,
                 stdout=subprocess.PIPE,

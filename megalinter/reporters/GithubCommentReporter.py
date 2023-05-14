@@ -98,13 +98,13 @@ class GithubCommentReporter(Reporter):
             ref = os.environ.get("GITHUB_REF", "")
             m = re.compile("refs/pull/(\\d+)/merge").match(ref)
             if m is not None:
-                pr_id = m.group(1)
+                pr_id = m[1]
                 logging.debug(f"Identified PR#{pr_id} from environment")
                 try:
                     pr_list = [repo.get_pull(int(pr_id))]
                 except Exception as e:
                     logging.warning(f"Could not fetch PR#{pr_id}: {e}")
-            if pr_list is None or len(pr_list) == 0:
+            if pr_list is None or not pr_list:
                 # If not found with GITHUB_REF, try to find PR from commit
                 commit = repo.get_commit(sha=sha)
                 pr_list = commit.get_pulls()
@@ -117,13 +117,14 @@ class GithubCommentReporter(Reporter):
                 # Ignore if PR is already merged
                 if pr.is_merged():
                     continue
-                # Check if there is already a comment from MegaLinter
-                # start searching from the most recent comment, backwards.
-                existing_comment = None
-                for comment in pr.get_issue_comments().reversed:
-                    if marker in comment.body:
-                        existing_comment = comment
-                        break
+                existing_comment = next(
+                    (
+                        comment
+                        for comment in pr.get_issue_comments().reversed
+                        if marker in comment.body
+                    ),
+                    None,
+                )
                 # Process comment
                 try:
                     # Edit if there is already a MegaLinter comment
@@ -151,7 +152,6 @@ class GithubCommentReporter(Reporter):
                     logging.warning(
                         f"[GitHub Comment Reporter] Error while posting comment: \n{str(e)}"
                     )
-        # Not in github context, or env var POST_GITHUB_COMMENT = false
         else:
             logging.debug(
                 "[GitHub Comment Reporter] No GitHub Token has been found, so skipped post of PR comment"

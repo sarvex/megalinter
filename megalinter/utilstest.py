@@ -37,14 +37,13 @@ REPO_HOME = (
 
 # Returns root dir depending we are locally or in CI
 def get_root_dir():
-    root_dir = (
+    return (
         DEFAULT_DOCKER_WORKSPACE_DIR
         if os.path.isdir(DEFAULT_DOCKER_WORKSPACE_DIR)
         else Repo(__file__, search_parent_directories=True).git.rev_parse(
             "--show-toplevel"
         )
     )
-    return root_dir
 
 
 # Define env variables before any test case
@@ -160,7 +159,7 @@ def test_linter_success(linter, test_self):
         "PRINT_ALL_FILES": "true",
         "request_id": test_self.request_id,
     }
-    env_vars.update(linter.test_variables)
+    env_vars |= linter.test_variables
     mega_linter, output = call_mega_linter(env_vars)
     test_self.assertTrue(
         len(mega_linter.linters) > 0, "Linters have been created and run"
@@ -223,7 +222,7 @@ def test_linter_failure(linter, test_self):
         "ENABLE_LINTERS": linter.name,
         "request_id": test_self.request_id,
     }
-    env_vars_failure.update(linter.test_variables)
+    env_vars_failure |= linter.test_variables
     mega_linter, output = call_mega_linter(env_vars_failure)
     # Check linter run
     test_self.assertTrue(
@@ -307,13 +306,13 @@ def test_get_linter_version(linter, test_self):
         raise unittest.SkipTest("Linter has been disabled")
     # Check linter version
     version = linter.get_linter_version()
-    print("[" + linter.linter_name + "] version: " + version)
+    print(f"[{linter.linter_name}] version: {version}")
     # Ugly workaround to avoid instability of get sql_tsqllint_test version
     if version == "ERROR" and test_self.__class__.__name__ == "sql_tsqllint_test":
         raise unittest.SkipTest("Ugly workaround to avoid sql_tsqllint_test failure")
     # Check version is returned
     test_self.assertFalse(
-        version == "ERROR", "Returned version invalid: [" + version + "]"
+        version == "ERROR", f"Returned version invalid: [{version}]"
     )
     # Check linter version cache
     version_cache = linter.get_linter_version()
@@ -332,9 +331,7 @@ def test_get_linter_version(linter, test_self):
     if (
         linter.linter_name in data and data[linter.linter_name] != version
     ) or linter.linter_name not in data:
-        prev_version = None
-        if linter.linter_name in data and data[linter.linter_name] != version:
-            prev_version = data[linter.linter_name]
+        prev_version = data[linter.linter_name] if linter.linter_name in data else None
         data[linter.linter_name] = version
         with open(versions_file, "w", encoding="utf-8") as outfile:
             json.dump(data, outfile, indent=4, sort_keys=True)
@@ -352,10 +349,7 @@ def test_get_linter_version(linter, test_self):
                     f"CHANGELOG.md must contain a single block scoped by '{start}' and '{end}'"
                 )
             versions_text = existing_text_find[0]
-            versions_text += (
-                f"  - [{linter.linter_name}]({linter.linter_url}) from {prev_version} to **{version}**"
-                f" on {datetime.today().strftime('%Y-%m-%d')}\n"
-            )
+            versions_text += f"  - [{linter.linter_name}]({linter.linter_url}) from {prev_version} to **{version}** on {datetime.now().strftime('%Y-%m-%d')}\n"
             versions_block = f"{start}{versions_text}{end}"
             changelog_content = re.sub(
                 regex, versions_block, changelog_content, re.DOTALL
@@ -372,12 +366,12 @@ def test_get_linter_help(linter, test_self):
         raise unittest.SkipTest("Linter has been disabled")
     # Check linter help
     help_txt = linter.get_linter_help()
-    print("[" + linter.linter_name + "] help: " + help_txt)
+    print(f"[{linter.linter_name}] help: {help_txt}")
     # Ugly workaround to avoid instability of get sql_tsqllint_test version
     if help_txt == "ERROR" and test_self.__class__.__name__ == "sql_tsqllint_test":
         raise unittest.SkipTest("Ugly workaround to avoid sql_tsqllint_test failure")
     test_self.assertFalse(
-        help_txt == "ERROR", "Returned help invalid: [" + help_txt + "]"
+        help_txt == "ERROR", f"Returned help invalid: [{help_txt}]"
     )
     # Write in linter-helps.json
     root_dir = get_root_dir()
@@ -419,10 +413,9 @@ def test_linter_report_tap(linter, test_self):
     )
     assert os.path.isdir(workspace), f"Test folder {workspace} is not existing"
     expected_file_name = ""
-    # Identify expected report if defined
-    reports_with_extension = []
-    for ext in linter.file_extensions:
-        reports_with_extension += [f"expected-{ext.upper()[1:]}.tap"]
+    reports_with_extension = [
+        f"expected-{ext.upper()[1:]}.tap" for ext in linter.file_extensions
+    ]
     possible_reports = [
         f"expected-{linter.name}.tap",
         f"expected-{linter.descriptor_id}.tap",
@@ -446,7 +439,7 @@ def test_linter_report_tap(linter, test_self):
         "ENABLE_LINTERS": linter.name,
         "request_id": test_self.request_id,
     }
-    env_vars.update(linter.test_variables)
+    env_vars |= linter.test_variables
     mega_linter, _output = call_mega_linter(env_vars)
     test_self.assertTrue(
         len(mega_linter.linters) > 0, "Linters have been created and run"
@@ -463,12 +456,11 @@ def test_linter_report_tap(linter, test_self):
         content_produced = f_produced.read()
         with open(expected_file_name, "r", encoding="utf-8") as f_expected:
             content_expected = f_expected.read()
-            diffs = [
+            if diffs := [
                 li
                 for li in difflib.ndiff(content_expected, content_produced)
                 if li[0] != " " and li not in ["- \\n", "-  ", "+ \\n", "+  "]
-            ]
-            if len(diffs) > 0:
+            ]:
                 # Compare just the lines not containing 'message'
                 expected_lines = content_expected.splitlines()
                 produced_lines = content_produced.splitlines()
@@ -492,10 +484,7 @@ def test_linter_report_tap(linter, test_self):
                         )
                     identical_nb = identical_nb + 1
                 logging.warning(
-                    "Produced and expected TAP files are different "
-                    "only inside the content of [message:] YAML lines."
-                    f"{str(identical_nb)} TAP lines on the total {str(len(expected_lines))} "
-                    f"remain perfectly identical :)"
+                    f"Produced and expected TAP files are different only inside the content of [message:] YAML lines.{str(identical_nb)} TAP lines on the total {len(expected_lines)} remain perfectly identical :)"
                 )
 
 
@@ -527,7 +516,7 @@ def test_linter_report_sarif(linter, test_self):
         "LOG_FILE": "megalinter.log",
         "request_id": test_self.request_id,
     }
-    env_vars.update(linter.test_variables)
+    env_vars |= linter.test_variables
     mega_linter, _output = call_mega_linter(env_vars)
     test_self.assertTrue(
         len(mega_linter.linters) > 0, "Linters have been created and run"
@@ -573,8 +562,8 @@ def test_linter_report_sarif(linter, test_self):
 def assert_is_skipped(skipped_item, output, test_self):
     test_self.assertRegex(
         output,
-        rf"(?<=Skipped linters:)*({skipped_item})(?=.*[\n])",
-        "No trace of skipped item " + skipped_item + " in log",
+        f"(?<=Skipped linters:)*({skipped_item})(?=.*[\n])",
+        f"No trace of skipped item {skipped_item} in log",
     )
 
 
@@ -582,10 +571,7 @@ def assert_file_has_been_updated(file_name, bool_val, test_self):
     repo = Repo(os.path.realpath(REPO_HOME))
     changed_files = [item.a_path for item in repo.index.diff(None)]
     logging.info("Updated files (git):\n" + "\n".join(changed_files))
-    updated = False
-    for changed_file in changed_files:
-        if file_name in changed_file:
-            updated = True
+    updated = any(file_name in changed_file for changed_file in changed_files)
     if bool_val is True:
         test_self.assertTrue(updated, f"{file_name} has been updated")
     else:
@@ -628,7 +614,7 @@ def test_linter_format_fix(linter, test_self):
             content_expected = f_expected.read()
             file_map[file] = content_expected
 
-    if len(file_map) == 0:
+    if not file_map:
         raise Exception(f"[test] No files found in: {workspace}")
 
     linter_name = linter.linter_name
@@ -644,7 +630,7 @@ def test_linter_format_fix(linter, test_self):
         "PRINT_ALL_FILES": "true",
         "request_id": test_self.request_id,
     }
-    env_vars.update(linter.test_variables)
+    env_vars |= linter.test_variables
     mega_linter, output = call_mega_linter(env_vars)
     test_self.assertTrue(
         len(mega_linter.linters) > 0, "Linters have been created and run"
@@ -686,7 +672,7 @@ def test_linter_format_fix(linter, test_self):
                 for li in difflib.ndiff(content_expected, content_produced)
                 if li[0] != " "
             ]
-            assert (len(list(diffs))) > 0, f"No changes in the {file} file"
+            assert list(diffs), f"No changes in the {file} file"
 
         repo.index.checkout(
             [os.path.join(os.path.realpath(REPO_HOME), file)], force=True

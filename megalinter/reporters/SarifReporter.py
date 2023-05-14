@@ -51,10 +51,7 @@ class SarifReporter(Reporter):
             },
             "runs": [],
         }
-        # Check delete linter SARIF file if LOG_FILE=none
-        keep_sarif_logs = True
-        if config.get(self.master.request_id, "LOG_FILE", "") == "none":
-            keep_sarif_logs = False
+        keep_sarif_logs = config.get(self.master.request_id, "LOG_FILE", "") != "none"
         # Build unique SARIF file with all SARIF output files
         for linter in self.master.linters:
             if linter.sarif_output_file is not None and os.path.isfile(
@@ -86,11 +83,11 @@ class SarifReporter(Reporter):
                             f"SARIF file {linter.sarif_output_file}"
                         )
                         logging.error(str(e))
-                if load_ok is True:
+                if load_ok:
                     # append to global megalinter sarif run
                     sarif_obj["runs"] += linter_sarif_obj["runs"]
                     # Delete linter SARIF file if LOG_FILE=none
-                    if keep_sarif_logs is False and os.path.isfile(
+                    if not keep_sarif_logs and os.path.isfile(
                         linter.sarif_output_file
                     ):
                         os.remove(linter.sarif_output_file)

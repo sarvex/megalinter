@@ -14,56 +14,57 @@ from megalinter.utils_reporter import get_linter_doc_url
 
 def normalize_sarif_files(linter):
     if (
-        linter.sarif_output_file is not None
-        and os.path.isfile(linter.sarif_output_file)
-        and os.path.getsize(linter.sarif_output_file) > 0
+        linter.sarif_output_file is None
+        or not os.path.isfile(linter.sarif_output_file)
+        or os.path.getsize(linter.sarif_output_file) <= 0
     ):
-        # Read SARIF output file
+        return
+    # Read SARIF output file
 
-        load_ok = False
-        with open(linter.sarif_output_file, "r", encoding="utf-8") as linter_sarif_file:
-            # parse sarif file
-            try:
-                linter_sarif_obj = json.load(linter_sarif_file)
-                load_ok = True
-            except JSONDecodeError as e:
-                # JSON decoding error
-                logging.error(
-                    f"[SARIF reporter] ERROR: Unable to decode {linter.name} "
-                    f"SARIF file {linter.sarif_output_file}"
-                )
-                logging.error(str(e))
-                logging.debug(f"SARIF File content:\n{linter_sarif_file.read()}")
-            except Exception as e:  # noqa: E722
-                # Other error
-                logging.error(
-                    f"[SARIF reporter] ERROR: Unknown error with {linter.name} "
-                    f"SARIF file {linter.sarif_output_file}"
-                )
-                logging.error(str(e))
-        if load_ok is True:
-            linter_sarif_obj = fix_sarif(linter_sarif_obj, linter)
+    load_ok = False
+    with open(linter.sarif_output_file, "r", encoding="utf-8") as linter_sarif_file:
+        # parse sarif file
+        try:
+            linter_sarif_obj = json.load(linter_sarif_file)
+            load_ok = True
+        except JSONDecodeError as e:
+            # JSON decoding error
+            logging.error(
+                f"[SARIF reporter] ERROR: Unable to decode {linter.name} "
+                f"SARIF file {linter.sarif_output_file}"
+            )
+            logging.error(str(e))
+            logging.debug(f"SARIF File content:\n{linter_sarif_file.read()}")
+        except Exception as e:  # noqa: E722
+            # Other error
+            logging.error(
+                f"[SARIF reporter] ERROR: Unknown error with {linter.name} "
+                f"SARIF file {linter.sarif_output_file}"
+            )
+            logging.error(str(e))
+    if load_ok:
+        linter_sarif_obj = fix_sarif(linter_sarif_obj, linter)
 
-            result_json = json.dumps(linter_sarif_obj, sort_keys=True, indent=2)
+        result_json = json.dumps(linter_sarif_obj, sort_keys=True, indent=2)
 
-            with open(linter.sarif_output_file, "w", encoding="utf-8") as sarif_file:
-                sarif_file.write(result_json)
-                logging.info(
-                    f"[SARIF Reporter] Generated {linter.name} report: {linter.sarif_output_file}"
-                )
+        with open(linter.sarif_output_file, "w", encoding="utf-8") as sarif_file:
+            sarif_file.write(result_json)
+            logging.info(
+                f"[SARIF Reporter] Generated {linter.name} report: {linter.sarif_output_file}"
+            )
 
-            # In case SARIF is active, and default workspace is set, clear that from sarif files
-            default_workspace = config.get(linter.request_id, "DEFAULT_WORKSPACE")
-            if (
-                config.get(
-                    linter.request_id, "SARIF_REPORTER_NORMALIZE_LINTERS_OUTPUT", True
-                )
-                == "true"
-                and default_workspace
-            ):
-                clear_default_workspace_prefix(
-                    linter.sarif_output_file, default_workspace
-                )
+        # In case SARIF is active, and default workspace is set, clear that from sarif files
+        default_workspace = config.get(linter.request_id, "DEFAULT_WORKSPACE")
+        if (
+            config.get(
+                linter.request_id, "SARIF_REPORTER_NORMALIZE_LINTERS_OUTPUT", True
+            )
+            == "true"
+            and default_workspace
+        ):
+            clear_default_workspace_prefix(
+                linter.sarif_output_file, default_workspace
+            )
 
 
 def clear_default_workspace_prefix(file_path, default_workspace):
@@ -83,11 +84,9 @@ def clear_default_workspace_prefix(file_path, default_workspace):
                 new_line = line
                 matched = False
                 for p in patterns:
-                    match = re.match(p, line)
-
-                    if match:
+                    if match := re.match(p, line):
                         matched = True
-                        replaced = re.sub(p, match.group("def_ws_context"), line)
+                        replaced = re.sub(p, match["def_ws_context"], line)
                         new_file.write(replaced)
 
                 if not matched:

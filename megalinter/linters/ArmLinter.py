@@ -16,7 +16,7 @@ class ArmLinter(Linter):
         self.arm_ttk_psd1 = config.get(
             self.request_id, "ARM_TTK_PSD1", "/usr/bin/arm-ttk"
         )
-        pwsh_script = ["Import-Module " + self.arm_ttk_psd1 + " ;"]
+        pwsh_script = [f"Import-Module {self.arm_ttk_psd1} ;"]
         if self.config_file is not None:
             pwsh_script += [
                 '${config} = $(Import-PowerShellDataFile -Path "'
@@ -27,43 +27,40 @@ class ArmLinter(Linter):
         else:
             pwsh_script += [f"Test-AzTemplate -TemplatePath '{file}' ;"]
         pwsh_script += ["if (${Error}.Count) {exit 1}"]
-        cmd = [
+        return [
             ("powershell" if sys.platform == "win32" else "pwsh"),
             "-NoProfile",
             "-NoLogo",
             "-Command",
             "\n".join(pwsh_script),
         ]
-        return cmd
 
     # Build the CLI command to get linter version
     def build_version_command(self):
         pwsh_script = [
-            "Import-Module " + self.arm_ttk_psd1 + " ;",
+            f"Import-Module {self.arm_ttk_psd1} ;",
             "$TAZ_V = (Test-AzTemplate -version);",
             "Write-Output $TAZ_V;",
         ]
-        cmd = [
+        return [
             ("powershell" if sys.platform == "win32" else "pwsh"),
             "-NoProfile",
             "-NoLogo",
             "-Command",
             "\n".join(pwsh_script),
         ]
-        return cmd
 
     # Build the CLI command to get linter help
     def build_help_command(self):
         pwsh_script = [
-            "Import-Module " + self.arm_ttk_psd1 + " ;",
+            f"Import-Module {self.arm_ttk_psd1} ;",
             "$TAZ_V = (Test-AzTemplate -help);",
             "Write-Output $TAZ_V;",
         ]
-        cmd = [
+        return [
             ("powershell" if sys.platform == "win32" else "pwsh"),
             "-NoProfile",
             "-NoLogo",
             "-Command",
             "\n".join(pwsh_script),
         ]
-        return cmd

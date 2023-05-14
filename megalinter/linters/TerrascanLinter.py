@@ -15,7 +15,7 @@ class TerrascanLinter(megalinter.Linter):
         terrascan_init_command = "terrascan"
         if self.config_file is not None:
             terrascan_init_command += f" --config-path {self.config_file}"
-        logging.debug("terrascan before_lint_files: " + terrascan_init_command)
+        logging.debug(f"terrascan before_lint_files: {terrascan_init_command}")
         # Add to pre-commands
         terrascan_pre_command = {
             "command": terrascan_init_command,

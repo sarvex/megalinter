@@ -104,7 +104,7 @@ class GitlabCommentReporter(Reporter):
                 gitlab_options["ssl_verify"] = gitlab_certificate_path
             # Create gitlab connection
             logging.debug(
-                f"[GitlabCommentReporter] Logging to {gitlab_server_url} with {str(gitlab_options)}"
+                f"[GitlabCommentReporter] Logging to {gitlab_server_url} with {gitlab_options}"
             )
             gl = gitlab.Gitlab(gitlab_server_url, **gitlab_options)
             # Get gitlab project
@@ -194,7 +194,6 @@ class GitlabCommentReporter(Reporter):
             except Exception as e:
                 logging.warning("[Gitlab Comment Reporter] Error while posting comment")
                 self.display_auth_error(e)
-        # Not in gitlab context
         else:
             logging.debug(
                 "[Gitlab Comment Reporter] No Gitlab Token found, so skipped post of MR comment"

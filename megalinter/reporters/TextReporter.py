@@ -65,17 +65,16 @@ class TextReporter(Reporter):
                     file_nm = utils.normalize_log_string(file_result["file"])
                     file_text_lines = [f"{status} {file_nm}"]
                 if file_result["fixed"] is True:
-                    file_text_lines[0] = file_text_lines[0] + " - FIXED"
+                    file_text_lines[0] = f"{file_text_lines[0]} - FIXED"
                 if self.report_type == "detailed" or file_result["status_code"] != 0:
                     std_out_text = (
                         file_result["stdout"].rstrip(f" {os.linesep}") + os.linesep
                     )
                     std_out_text = "\n    ".join(std_out_text.splitlines())
                     std_out_text = utils.normalize_log_string(std_out_text)
-                    detailed_lines = ["    " + std_out_text, ""]
+                    detailed_lines = [f"    {std_out_text}", ""]
                     file_text_lines += detailed_lines
                 text_report_lines += file_text_lines
-        # Bulk output as linter has run all project or files in one call
         elif self.master.cli_lint_mode in ["project", "list_of_files"]:
             workspace_nm = utils.normalize_log_string(self.master.workspace)
             status = "✅ [SUCCESS]" if self.master.status == "success" else "❌ [ERROR]"

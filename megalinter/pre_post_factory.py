@@ -22,7 +22,7 @@ def run_post_commands(mega_linter):
 def run_linter_pre_commands(mega_linter, linter):
     if linter.pre_commands is not None:
         return run_commands(
-            linter.pre_commands, "[Pre][" + linter.name + "]", mega_linter, linter
+            linter.pre_commands, f"[Pre][{linter.name}]", mega_linter, linter
         )
     return []
 
@@ -31,7 +31,7 @@ def run_linter_pre_commands(mega_linter, linter):
 def run_linter_post_commands(mega_linter, linter):
     if linter.post_commands is not None:
         return run_commands(
-            linter.post_commands, "[Post][" + linter.name + "]", mega_linter, linter
+            linter.post_commands, f"[Post][{linter.name}]", mega_linter, linter
         )
     return []
 
@@ -109,13 +109,13 @@ def complete_command(command_info: dict):
 
 
 def add_in_logs(linter, log_key, lines):
-    if linter is not None:
-        if "[Pre]" in log_key:
-            linter.log_lines_pre += lines
-        elif "[Post]" in log_key:
-            linter.log_lines_post += lines
-    else:
+    if linter is None:
         logging.info("\n".join(lines))
+
+    elif "[Pre]" in log_key:
+        linter.log_lines_pre += lines
+    elif "[Post]" in log_key:
+        linter.log_lines_post += lines
 
 
 def has_npm_or_yarn_commands(request_id):

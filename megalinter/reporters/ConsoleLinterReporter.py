@@ -44,7 +44,7 @@ class ConsoleLinterReporter(Reporter):
             )
         # Output linter status
         base_phrase = f"Linted [{self.master.descriptor_id}] files with [{self.master.linter_name}]"
-        elapse = str(round(self.master.elapsed_time_s, 2)) + "s"
+        elapse = f"{str(round(self.master.elapsed_time_s, 2))}s"
         total_errors = str(self.master.total_number_errors)
         if self.master.return_code == 0 and self.master.status == "success":
             logging.info(
@@ -53,7 +53,7 @@ class ConsoleLinterReporter(Reporter):
                     c.green(f"✅ {base_phrase} successfully - ({elapse})"),
                 )
             )
-        elif self.master.return_code == 0 and self.master.status != "success":
+        elif self.master.return_code == 0:
             logging.warning(
                 log_section_start(
                     f"processed-{self.master.name}",
@@ -62,7 +62,7 @@ class ConsoleLinterReporter(Reporter):
                     ),
                 )
             )
-        elif self.master.return_code != 0 and self.master.status != "success":
+        elif self.master.status != "success":
             logging.error(
                 log_section_start(
                     f"processed-{self.master.name}",

@@ -50,7 +50,7 @@ class TapReporter(Reporter):
     def produce_report(self):
         if self.master.cli_lint_mode == "project":
             return
-        tap_report_lines = ["TAP version 13", f"1..{str(len(self.master.files))}"]
+        tap_report_lines = ["TAP version 13", f"1..{len(self.master.files)}"]
         # Convert file results in TAP
         for index, file_result in enumerate(self.master.files_lint_results):
             file_nm = utils.normalize_log_string(file_result["file"])

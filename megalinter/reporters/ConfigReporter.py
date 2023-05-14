@@ -149,11 +149,11 @@ IDE EXTENSIONS APPLICABLE TO YOUR PROJECT
                 ext_dep_component = dom.createElement("component")
                 ext_dep_component.setAttribute("name", "ExternalDependencies")
                 dom.documentElement.appendChild(ext_dep_component)
-            configured = set()
-            for node in ext_dep_component.childNodes:
-                if node.localName == "plugin":
-                    configured.add(node.getAttribute("id"))
-
+            configured = {
+                node.getAttribute("id")
+                for node in ext_dep_component.childNodes
+                if node.localName == "plugin"
+            }
             to_add = set(idea_recommended_extensions) - configured
 
             for id in to_add:

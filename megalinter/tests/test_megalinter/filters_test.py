@@ -16,7 +16,7 @@ class utilsTest(unittest.TestCase):
         regex_object = re.compile("|".join(regex_list), flags=re.MULTILINE)
         file = f"{repo_home}/.automation/test/perl/perl_good_2"
         file_contains_res = utils.file_contains(file, regex_object)
-        self.assertTrue(file_contains_res, f"{file} matching with {str(regex_list)}")
+        self.assertTrue(file_contains_res, f"{file} matching with {regex_list}")
 
     def test_file_contains_false(self):
         repo_home = utils.REPO_HOME_DEFAULT
@@ -24,7 +24,7 @@ class utilsTest(unittest.TestCase):
         regex_object = re.compile("|".join(regex_list), flags=re.MULTILINE)
         file = f"{repo_home}/.dockerignore"
         file_contains_res = utils.file_contains(file, regex_object)
-        self.assertFalse(file_contains_res, f"{file} matching with {str(regex_list)}")
+        self.assertFalse(file_contains_res, f"{file} matching with {regex_list}")
 
     def test_file_is_generated_true(self):
         repo_home = utils.REPO_HOME_DEFAULT

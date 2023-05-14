@@ -38,52 +38,12 @@ class mega_linter_1_test(unittest.TestCase):
 
     def test_disable_language_legacy(self):
         raise unittest.SkipTest("Ugly workaround to avoid CI failure")
-        self.before_start()
-        mega_linter, output = utilstest.call_mega_linter(
-            {
-                "DISABLE": "REPOSITORY,SPELL,TERRAFORM",
-                "VALIDATE_GROOVY": "false",
-                "request_id": self.request_id,
-            }
-        )
-        self.assertTrue(
-            len(mega_linter.linters) > 0, "Linters have been created and run"
-        )
-        utilstest.assert_is_skipped("GROOVY", output, self)
 
     def test_disable_linter(self):
         raise unittest.SkipTest("Ugly workaround to avoid CI failure")
-        self.before_start()
-        mega_linter, output = utilstest.call_mega_linter(
-            {
-                "DISABLE": "REPOSITORY,SPELL,TERRAFORM",
-                "DISABLE_LINTERS": "JAVASCRIPT_ES",
-                "request_id": self.request_id,
-            }
-        )
-        self.assertTrue(
-            len(mega_linter.linters) > 0, "Linters have been created and run"
-        )
-        utilstest.assert_is_skipped("JAVASCRIPT_ES", output, self)
-        self.assertIn("Linted [JAVASCRIPT] files", output)
-        self.assertIn("Using [standard", output)
 
     def test_disable_linter_legacy(self):
         raise unittest.SkipTest("Ugly workaround to avoid CI failure")
-        self.before_start()
-        mega_linter, output = utilstest.call_mega_linter(
-            {
-                "DISABLE": "REPOSITORY,SPELL,TERRAFORM",
-                "VALIDATE_JAVASCRIPT_ES": "false",
-                "request_id": self.request_id,
-            }
-        )
-        self.assertTrue(
-            len(mega_linter.linters) > 0, "Linters have been created and run"
-        )
-        utilstest.assert_is_skipped("JAVASCRIPT_ES", output, self)
-        self.assertIn("Linted [JAVASCRIPT] files", output)
-        self.assertIn("Using [standard", output)
 
     def test_enable_only_one_linter(self):
         self.before_start()
@@ -318,19 +278,6 @@ class mega_linter_1_test(unittest.TestCase):
 
     def test_new_flavor_suggestion(self):
         raise unittest.SkipTest("Ugly workaround to avoid CI failure")
-        self.before_start()
-        mega_linter, output = utilstest.call_mega_linter(
-            {
-                "DISABLE": "REPOSITORY,SPELL,TERRAFORM",
-                "MULTI_STATUS": "false",
-                "LOG_LEVEL": "DEBUG",
-                "request_id": self.request_id,
-            }
-        )
-        self.assertTrue(
-            len(mega_linter.linters) > 0, "Linters have been created and run"
-        )
-        self.assertEqual("new", mega_linter.flavor_suggestions[0])
 
     def test_json_output(self):
         self.before_start()
@@ -349,7 +296,7 @@ class mega_linter_1_test(unittest.TestCase):
         )
         self.assertTrue(
             os.path.isfile(expected_output_file),
-            "Output json file " + expected_output_file + " should exist",
+            f"Output json file {expected_output_file} should exist",
         )
 
     def test_json_output_detailed(self):
@@ -370,7 +317,7 @@ class mega_linter_1_test(unittest.TestCase):
         )
         self.assertTrue(
             os.path.isfile(expected_output_file),
-            "Output json file " + expected_output_file + " should exist",
+            f"Output json file {expected_output_file} should exist",
         )
 
     def test_tap_output_detailed(self):
@@ -395,7 +342,7 @@ class mega_linter_1_test(unittest.TestCase):
         )
         self.assertTrue(
             os.path.isfile(expected_output_file),
-            "Output tap file " + expected_output_file + " should exist",
+            f"Output tap file {expected_output_file} should exist",
         )
 
     def test_config_reporter(self):
@@ -415,7 +362,7 @@ class mega_linter_1_test(unittest.TestCase):
         )
         self.assertTrue(
             os.path.isfile(expected_output_file),
-            "Output IDE config file " + expected_output_file + " should exist",
+            f"Output IDE config file {expected_output_file} should exist",
         )
 
     def test_override_cli_lint_mode(self):

@@ -15,7 +15,7 @@ class TfLintLinter(megalinter.Linter):
         tflint_init_command = "tflint --init"
         if self.config_file is not None:
             tflint_init_command += f" --config {self.config_file}"
-        logging.debug("tflint before_lint_files: " + tflint_init_command)
+        logging.debug(f"tflint before_lint_files: {tflint_init_command}")
         # Add to pre-commands
         tflint_pre_command = {"command": tflint_init_command, "cwd": self.workspace}
         if self.pre_commands is None:

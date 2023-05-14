@@ -35,8 +35,7 @@ class SemgrepLinter(Linter):
         if len(custom_rulesets) > 0 and replace_index > -1:
             custom_rulesets_args = []
             for custom_ruleset in custom_rulesets:
-                custom_rulesets_args.append("--config")
-                custom_rulesets_args.append(custom_ruleset)
+                custom_rulesets_args.extend(("--config", custom_ruleset))
             cmd = (
                 cmd[: replace_index - 1]
                 + custom_rulesets_args

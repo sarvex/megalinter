@@ -97,7 +97,7 @@ class Megalinter:
             if os.path.isdir("/action/lib/.automation")
             else os.path.relpath(
                 os.path.relpath(
-                    os.path.dirname(os.path.abspath(__file__)) + "/../TEMPLATES"
+                    f"{os.path.dirname(os.path.abspath(__file__))}/../TEMPLATES"
                 )
             )
         )
@@ -304,7 +304,7 @@ class Megalinter:
                     # If the linter can not updates sources, no need to run it in the same group
                     linter_groups_without_fixes += [[linter]]
             # Add groups of linters that can update sources
-            for _descriptor_id, linters in linters_by_descriptor.items():
+            for linters in linters_by_descriptor.values():
                 linter_groups += [linters]
             linter_groups = linter_factory.sort_linters_groups_by_speed(linter_groups)
             # Add "groups" of 1 linter than can not update sources
@@ -364,19 +364,14 @@ class Megalinter:
             if os.path.isdir(self.arg_input):
                 # Absolute directory
                 return self.arg_input
-            else:
-                # Relative directory
-                logging.debug(
-                    f"[Context] workspace sent as input argument: {self.arg_input}"
-                )
-                assert os.path.isdir(
-                    DEFAULT_DOCKER_WORKSPACE_DIR + "/" + self.arg_input
-                ), (
-                    f"--input directory not found at {DEFAULT_DOCKER_WORKSPACE_DIR}/"
-                    + self.arg_input
-                )
-                return DEFAULT_DOCKER_WORKSPACE_DIR + "/" + self.arg_input
-        # Github action run without override of DEFAULT_WORKSPACE and using DEFAULT_DOCKER_WORKSPACE_DIR
+            # Relative directory
+            logging.debug(
+                f"[Context] workspace sent as input argument: {self.arg_input}"
+            )
+            assert os.path.isdir(
+                f"{DEFAULT_DOCKER_WORKSPACE_DIR}/{self.arg_input}"
+            ), f"--input directory not found at {DEFAULT_DOCKER_WORKSPACE_DIR}/{self.arg_input}"
+            return f"{DEFAULT_DOCKER_WORKSPACE_DIR}/{self.arg_input}"
         elif (
             default_workspace == ""
             and github_workspace != ""
@@ -387,7 +382,6 @@ class Megalinter:
                 + DEFAULT_DOCKER_WORKSPACE_DIR
             )
             return github_workspace + DEFAULT_DOCKER_WORKSPACE_DIR
-        # Docker run without override of DEFAULT_WORKSPACE
         elif default_workspace != "" and os.path.isdir(
             DEFAULT_DOCKER_WORKSPACE_DIR + os.path.sep + default_workspace
         ):
@@ -401,20 +395,17 @@ class Megalinter:
                 + os.path.sep
                 + default_workspace
             )
-        # Docker run with override of DEFAULT_WORKSPACE for test cases
         elif default_workspace != "" and os.path.isdir(default_workspace):
             logging.debug(
                 f"[Context] Docker run test classes with override of DEFAULT_WORKSPACE - {default_workspace}"
             )
             return default_workspace
-        # Docker run test classes without override of DEFAULT_WORKSPACE
         elif os.path.isdir(DEFAULT_DOCKER_WORKSPACE_DIR):
             logging.debug(
                 "[Context] Docker run test classes without override of DEFAULT_WORKSPACE - "
                 + DEFAULT_DOCKER_WORKSPACE_DIR
             )
             return DEFAULT_DOCKER_WORKSPACE_DIR
-        # Github action with override of DEFAULT_WORKSPACE
         elif (
             default_workspace != ""
             and github_workspace != ""
@@ -425,7 +416,6 @@ class Megalinter:
                 f" - {github_workspace + os.path.sep + default_workspace}"
             )
             return github_workspace + os.path.sep + default_workspace
-        # Github action without override of DEFAULT_WORKSPACE and NOT using DEFAULT_DOCKER_WORKSPACE_DIR
         elif (
             default_workspace == ""
             and github_workspace != ""
@@ -438,7 +428,6 @@ class Megalinter:
                 f" - {github_workspace}"
             )
             return github_workspace
-        # Unable to identify workspace
         else:
             raise FileNotFoundError(
                 f"[Context] Unable to find a workspace to lint \n"
@@ -626,7 +615,7 @@ class Megalinter:
         files_to_lint = config.get_list(self.request_id, "MEGALINTER_FILES_TO_LINT", [])
         if len(files_to_lint) > 0:
             # Files sent as input parameter
-            all_files = list()
+            all_files = []
             for file_to_lint in files_to_lint:
                 if os.path.isfile(self.workspace + os.path.sep + file_to_lint):
                     all_files += [self.workspace + os.path.sep + file_to_lint]
@@ -655,7 +644,7 @@ class Megalinter:
         all_files = sorted(set(all_files))
 
         logging.debug(
-            "All found files before filtering:" + utils.format_bullet_list(all_files)
+            f"All found files before filtering:{utils.format_bullet_list(all_files)}"
         )
         # Filter files according to file_extensions, file_names_regex,
         # filter_regex_include, and filter_regex_exclude
@@ -668,9 +657,9 @@ class Megalinter:
                 "- File names (regex): " + ", ".join(sorted(self.file_names_regex))
             )
         if self.filter_regex_include is not None:
-            logging.info("- Including regex: " + self.filter_regex_include)
+            logging.info(f"- Including regex: {self.filter_regex_include}")
         if self.filter_regex_exclude is not None:
-            logging.info("- Excluding regex: " + self.filter_regex_exclude)
+            logging.info(f"- Excluding regex: {self.filter_regex_exclude}")
 
         # List git ignored files if necessary
         ignored_files = []
@@ -686,11 +675,17 @@ class Megalinter:
                     )
                 else:
                     logging.info(
-                        "- Excluding .gitignored files ["
-                        + str(len(ignored_files))
-                        + "]: "
-                        + ", ".join(ignored_files[0:10])
-                        + (",…(full list in DEBUG)" if len(ignored_files) > 10 else "")
+                        (
+                            "- Excluding .gitignored files ["
+                            + str(len(ignored_files))
+                            + "]: "
+                            + ", ".join(ignored_files[:10])
+                        )
+                        + (
+                            ",…(full list in DEBUG)"
+                            if len(ignored_files) > 10
+                            else ""
+                        )
                     )
             except git.InvalidGitRepositoryError as git_err:
                 logging.warning(f"Unable to list git ignored files ({str(git_err)})")
@@ -732,7 +727,7 @@ class Megalinter:
     def list_files_git_diff(self):
         # List all updated files from git
         logging.info(
-            "Listing updated files in [" + self.github_workspace + "] using git diff."
+            f"Listing updated files in [{self.github_workspace}] using git diff."
         )
         repo = git.Repo(os.path.realpath(self.github_workspace))
         # Add auth header if necessary
@@ -755,16 +750,16 @@ class Megalinter:
         # Make git diff to list files
         diff = repo.git.diff(default_branch_remote, name_only=True)
         logging.info(f"Modified files:\n{diff}")
-        all_files = list()
-        for diff_line in diff.splitlines():
-            if os.path.isfile(self.workspace + os.path.sep + diff_line):
-                all_files += [diff_line]
-        return all_files
+        return [
+            diff_line
+            for diff_line in diff.splitlines()
+            if os.path.isfile(self.workspace + os.path.sep + diff_line)
+        ]
 
     def list_files_all(self):
         # List all files under workspace root directory
         logging.info(
-            "Listing all files in directory [" + self.workspace + "], then filter with:"
+            f"Listing all files in directory [{self.workspace}], then filter with:"
         )
         all_files = [
             file
@@ -772,7 +767,7 @@ class Megalinter:
             if os.path.isfile(os.path.join(self.workspace, file))
         ]
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logging.debug("Root dir content:" + utils.format_bullet_list(all_files))
+            logging.debug(f"Root dir content:{utils.format_bullet_list(all_files)}")
         excluded_directories = utils.get_excluded_directories(self.request_id)
         for dirpath, dirnames, filenames in os.walk(self.workspace, topdown=True):
             dirnames[:] = [d for d in dirnames if d not in excluded_directories]
@@ -795,7 +790,9 @@ class Megalinter:
                 "--cached",
             ]
         ).splitlines()
-        ignored_files = map(lambda x: x + "**" if x.endswith("/") else x, ignored_files)
+        ignored_files = map(
+            lambda x: f"{x}**" if x.endswith("/") else x, ignored_files
+        )
         # ignored_files will be match against absolute path (in all_files), so it should be absolute
         ignored_files = map(lambda x: os.path.join(dirpath, x), ignored_files)
         ignored_files = sorted(list(ignored_files))

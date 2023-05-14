@@ -51,7 +51,7 @@ class config_test(unittest.TestCase):
 
     def test_remote_config_success(self):
         changed_files = self.replace_branch_in_input_files()
-        remote_config = self.test_folder + "remote/custom.mega-linter.yml"
+        remote_config = f"{self.test_folder}remote/custom.mega-linter.yml"
         request_id = str(uuid.uuid1())
         config.init_config(request_id, None, {"MEGALINTER_CONFIG": remote_config})
         self.assertEqual("(custom)", config.get(request_id, "FILTER_REGEX_INCLUDE"))
@@ -59,7 +59,7 @@ class config_test(unittest.TestCase):
 
     def test_remote_config_error(self):
         changed_files = self.replace_branch_in_input_files()
-        remote_config = self.test_folder + "custom.mega-linter-not-existing.yml"
+        remote_config = f"{self.test_folder}custom.mega-linter-not-existing.yml"
         request_id = str(uuid.uuid1())
         try:
             config.init_config(request_id, None, {"MEGALINTER_CONFIG": remote_config})
@@ -142,7 +142,7 @@ class config_test(unittest.TestCase):
 
     def test_remote_config_extends_success(self):
         changed_files = self.replace_branch_in_input_files()
-        remote_config = self.test_folder + "remote_extends/base.mega-linter.yml"
+        remote_config = f"{self.test_folder}remote_extends/base.mega-linter.yml"
         request_id = str(uuid.uuid1())
         config.init_config(request_id, None, {"MEGALINTER_CONFIG": remote_config})
         self.assertEqual("(base)", config.get(request_id, "FILTER_REGEX_INCLUDE"))
@@ -152,7 +152,7 @@ class config_test(unittest.TestCase):
 
     def test_remote_config_extends_success_2(self):
         changed_files = self.replace_branch_in_input_files()
-        remote_config = self.test_folder + "remote_extends_2/base2.mega-linter.yml"
+        remote_config = f"{self.test_folder}remote_extends_2/base2.mega-linter.yml"
         request_id = str(uuid.uuid1())
         config.init_config(request_id, None, {"MEGALINTER_CONFIG": remote_config})
         self.assertEqual("(base)", config.get(request_id, "FILTER_REGEX_INCLUDE"))
@@ -163,7 +163,7 @@ class config_test(unittest.TestCase):
     def test_remote_config_extends_error(self):
         changed_files = self.replace_branch_in_input_files()
         remote_config = (
-            self.test_folder + "remote_extends_error/base-error.mega-linter.yml"
+            f"{self.test_folder}remote_extends_error/base-error.mega-linter.yml"
         )
         request_id = str(uuid.uuid1())
         try:
@@ -366,20 +366,13 @@ class config_test(unittest.TestCase):
         )
 
     def replace_branch_in_input_files(self):
-        root = (
-            ".automation"
-            + os.path.sep
-            + "test"
-            + os.path.sep
-            + "mega-linter-config-test"
-        )
+        root = f".automation{os.path.sep}test{os.path.sep}mega-linter-config-test"
 
         search_glob_pattern = root.replace("\\", "/") + "/**/*"
 
-        regex = r"(/oxsecurity/megalinter/main)(/\.automation)"
-
         list = []
 
+        regex = r"(/oxsecurity/megalinter/main)(/\.automation)"
         for file in glob.iglob(search_glob_pattern, recursive=True):
             file_name = os.path.basename(file)
 
