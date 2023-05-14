@@ -17,7 +17,11 @@ class JsCpdLinter(Linter):
                 "--output",
                 f"{self.report_folder}/copy-paste/",
             ]
-        return super().build_lint_command(file)
+        cmd = super().build_lint_command(file)
+        # Do not use Jscpd HTML reporter if deactivated
+        if not utils.can_write_report_files(self.master):
+            cmd = [item.replace("console,html", "console") for item in cmd]
+        return cmd
 
     # Perform additional actions and provide additional details in text reporter logs
     def complete_text_reporter_report(self, reporter_self):

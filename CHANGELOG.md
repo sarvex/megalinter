@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 Note: Can be used with `oxsecurity/megalinter@beta` in your GitHub Action mega-linter.yml file, or with `oxsecurity/megalinter:beta` docker image
 
 - New linters
+  - [#2115](https://github.com/oxsecurity/megalinter/pull/2115) Add cljstyle to Clojure linters
   - [Vale](https://vale.sh/), a powerful enforcer of writing style
 
 - Medias
@@ -17,16 +18,25 @@ Note: Can be used with `oxsecurity/megalinter@beta` in your GitHub Action mega-l
   - Web site: [my-devops-lab.com](https://www.my-devops-lab.com/tools)
 
 - Linter enhancements & fixes
+  - Gitleaks: add support to scan PR commits only on PRs when `VALIDATE_ALL_CODEBASE` is set to `false`, by @DariuszPorowski [#2504](https://github.com/oxsecurity/megalinter/pull/2504)
   - Ensure ESLint actually runs in project mode rather than silently doing nothing, by @Kurt-von-Laven [#2455](https://github.com/oxsecurity/megalinter/pull/2455).
   - Prevent jscpd to create output folder if the repo isn't writable. Fixes [#2108](https://github.com/oxsecurity/megalinter/issues/2108)
   - Fix corrective .cspell.json file generated from cspell output
   - Deprecate misspell, as it is not maintained since 2018
+  - Jscpd: Do not output HTML reports if REPORT_OUTPUT_FOLDER is none
+  - kubeconform: Simplify installation and get latest version
 
 - Reporters
   - Enhancements and fixes on Gitlab Comment Reporter
     - New var GITLAB_COMMENT_REPORTER_OVERWRITE_COMMENT to allow to disable the overwrite of existing MegaLinter comment in case of new run
     - In case of overwrite activated (by default), fetch all Merge Request comments, not the first 20.
     - Display a different message in log when a Merge Request comment is created or updated.
+
+- Removed linters
+  - KUBERNETES_KUBEVAL: Not maintained anymore (kubeconform recommended by the authors)
+  - REPOSITORY_GOODCHECK: Not open-source anymore
+  - SPELL_MISSPELL: Not maintained anymore (last commit 2018)
+  - TERRAFORM_CHECKOV: Replaced by REPOSITORY_CHECKOV
 
 - Core
   - Use relative file paths to call linters ([#1875](https://github.com/oxsecurity/megalinter/issues/1875))
@@ -42,6 +52,7 @@ Note: Can be used with `oxsecurity/megalinter@beta` in your GitHub Action mega-l
   - Fix crash in case of unreachable symlinks
   - Fix local run of python test cases
   - Fix mkdocs documentation generation by downgrading mkdocs-glightbox to 0.3.2
+  - mega-linter-runner v7 upgrader
 
 - Documentation
   - Apply many updates after the use of [Vale](https://vale.sh/) on MegaLinter own sources and docs
@@ -199,6 +210,7 @@ Note: Can be used with `oxsecurity/megalinter@beta` in your GitHub Action mega-l
   - [ruff](https://github.com/charliermarsh/ruff) from 0.0.266 to **0.0.267** on 2023-05-12
   - [vale](https://vale.sh/) from 2.25.2 to **2.26.0** on 2023-05-13
   - [swiftlint](https://github.com/realm/SwiftLint) from 0.52.1 to **0.52.2** on 2023-05-13
+  - [rubocop](https://rubocop.org/) from 1.50.2 to **1.51.0** on 2023-05-13
 <!-- linter-versions-end -->
 
 ## [v6.22.2] - 2023-04-03
